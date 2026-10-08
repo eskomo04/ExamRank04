@@ -13,7 +13,7 @@ int ft_popen(const char *file, char *const argv[], char type)
     pid_t pid;
     if(!file || !argv || (type != 'r' && type != 'w'))
         return(-1);
-    
+
     if(pipe(fd)== -1)
         return(-1);
 
@@ -24,6 +24,8 @@ int ft_popen(const char *file, char *const argv[], char type)
         close(fd[1]);
         return(-1);
     }
+
+////////////////CHILD-PART///////////
     if(pid == 0)
     {
         if(type == 'r')
@@ -41,15 +43,16 @@ int ft_popen(const char *file, char *const argv[], char type)
         execvp(file, argv);
         exit(1);
     }
+//////////PARENT-PART///////////////
     else
     {
-        if(type == 'r')
-        {
-            close(fd[1]);
-            return(fd[0]);
+        if(type == 'r')         //The parent will read the child's output,
+        {                      // so it keeps its fd[0](read end),
+            close(fd[1]);     // and close the fd[1](write end -
+            return(fd[0]);   //since it doesn't write anything to the child process).
         }
-        else
-        {
+        else                    //The parent will write input for the child,
+        {                      //so it keeps fd[1] and closes fd[0].
             close(fd[0]);
             return(fd[1]);
         }
